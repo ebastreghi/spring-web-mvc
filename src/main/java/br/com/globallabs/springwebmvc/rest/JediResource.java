@@ -2,7 +2,9 @@ package br.com.globallabs.springwebmvc.rest;
 
 import br.com.globallabs.springwebmvc.model.Jedi;
 import br.com.globallabs.springwebmvc.repository.JediRepository;
+import br.com.globallabs.springwebmvc.service.JediService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,40 +16,34 @@ import java.util.Optional;
 public class JediResource {
 
     @Autowired
-    private JediRepository repository;
+    private JediService service;
 
     @GetMapping("/api/jedi")
     public List<Jedi> getAllJedi(){
-        return repository.findAll();
+        return service.findAll();
     }
 
     @GetMapping("/api/jedi/{id}")
     public ResponseEntity<Jedi> getJedi(@PathVariable("id") Long id){
-        final Optional<Jedi> jedi = repository.findById(id);
-        if(jedi.isPresent()){
-            return ResponseEntity.ok(jedi.get());
-        }else{
-            return ResponseEntity.notFound().build();
-        }
+        final Jedi jedi = service.findById(id);
+        return ResponseEntity.ok(jedi);
     }
 
     @PostMapping("/api/jedi")
+    @ResponseStatus(HttpStatus.CREATED)
     public Jedi createJedi(@Valid @RequestBody Jedi jedi){
-        return repository.save(jedi);
+        return service.save(jedi);
     }
 
     @PutMapping("/api/jedi/{id}")
     public ResponseEntity<Jedi> updateJedi(@PathVariable("id") Long id, @Valid @RequestBody Jedi dto){
-        final Optional<Jedi> jediEntity = repository.findById(id);
-        final Jedi jedi;
-        if(jediEntity.isPresent()){
-            jedi = jediEntity.get();
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-        jedi.setName(dto.getName());
-        jedi.setLastName(dto.getLastName());
-        return ResponseEntity.ok(repository.save(jedi));
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @DeleteMapping("/api/jedi/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id){
+        service.delete(id);
     }
 
 }
